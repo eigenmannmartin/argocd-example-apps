@@ -14,7 +14,7 @@ spec:
       name: {{ template "helm-guestbook.fullname" . }} 
       port: http     
   tls:
-    secretName: tls   
+    secretName: "{{ .Release.Name }}-https"     
 ---   
 apiVersion: traefik.containo.us/v1alpha1      
 kind: IngressRoute    
@@ -37,7 +37,7 @@ spec:
 apiVersion: traefik.containo.us/v1alpha1      
 kind: Middleware      
 metadata:     
-  name: "{{ .Release.Name }}-https-only"      
+  name: "{{ .Release.Name }}-https-only"
 spec: 
   redirectScheme:     
     permanent: true   
