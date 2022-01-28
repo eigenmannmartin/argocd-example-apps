@@ -54,4 +54,4 @@ spec:
   issuerRef:
     kind: ClusterIssuer
     name: letsencrypt-prod-http01
-  secretName: tls
+  secretName: "{{ .Release.Name }}-https"  
