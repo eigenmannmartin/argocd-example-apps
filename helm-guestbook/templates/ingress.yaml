@@ -1,52 +1,52 @@
-apiVersion: traefik.containo.us/v1alpha1                                                                                                                                                                                                      
-kind: IngressRoute                                                                                                                                                                                                                            
-metadata:                                                                                                                                                                                                                                     
-  annotations:                                                                                                                                                                                                                                
-  name: "{{ .Release.Name }}"                                                                                                                                                                                                                                  
-spec:                                                                                                                                                                                                                                         
-  entryPoints:                                                                                                                                                                                                                                
-  - websecure                                                                                                                                                                                                                                 
-  routes:                                                                                                                                                                                                                                     
-  - kind: Rule                                                                                                                                                                                                                                
-    match: Host(`{{ .Values.ingress.host }}`)                                                                                                                                                                                                   
-    services:                                                                                                                                                                                                                                 
-    - kind: Service                                                                                                                                                                                                                           
-      name: webserver                                                                                                                                                                                                                         
-      port: nginx                                                                                                                                                                                                                             
-  tls:                                                                                                                                                                                                                                        
-    secretName: tls                                                                                                                                                                                                                           
----                                                                                                                                                                                                                                           
-apiVersion: traefik.containo.us/v1alpha1                                                                                                                                                                                                      
-kind: IngressRoute                                                                                                                                                                                                                            
-metadata:                                                                                                                                                                                                                                     
-  annotations:                                                                                                                                                                                                                                
-  name: "{{ .Release.Name }}-http"                                                                                                                                                                                                                      
-spec:                                                                                                                                                                                                                                         
-  entryPoints:                                                                                                                                                                                                                                
-  - web                                                                                                                                                                                                                                       
-  routes:                                                                                                                                                                                                                                     
-  - kind: Rule                                                                                                                                                                                                                                
-    match: Host(`{{ .Values.ingress.host }}`)                                                                                                                                                                                                   
-    middlewares:                                                                                                                                                                                                                              
-    - name: https-only                                                                                                                                                                                                                        
-    services:                                                                                                                                                                                                                                 
-    - kind: Service                                                                                                                                                                                                                           
-      name: webserver                                                                                                                                                                                                                         
-      port: nginx                                                                                                                                                                                                                             
----                                                                                                                                                                                                                                           
-apiVersion: traefik.containo.us/v1alpha1                                                                                                                                                                                                      
-kind: Middleware                                                                                                                                                                                                                              
-metadata:                                                                                                                                                                                                                                     
-  name: "{{ .Release.Name }}-https-only"                                                                                                                                                                                                                      
-spec:                                                                                                                                                                                                                                         
-  redirectScheme:                                                                                                                                                                                                                             
-    permanent: true                                                                                                                                                                                                                           
-    scheme: https                                                                                                                                                                                                                             
----                                                                                                                                                                                                                                           
-apiVersion: cert-manager.io/v1                                                                                                                                                                                                                
-kind: Certificate                                                                                                                                                                                                                             
-metadata:                                                                                                                                                                                                                                     
-  name: "{{ .Release.Name }}-https"                                                                                                                                                                                                                                  
+apiVersion: traefik.containo.us/v1alpha1      
+kind: IngressRoute    
+metadata:     
+  annotations:
+  name: "{{ .Release.Name }}"  
+spec: 
+  entryPoints:
+  - websecure 
+  routes:     
+  - kind: Rule
+    match: Host(`{{ .Values.ingress.host }}`)   
+    services: 
+    - kind: Service   
+      name: {{ template "helm-guestbook.fullname" . }} 
+      port: http     
+  tls:
+    secretName: tls   
+---   
+apiVersion: traefik.containo.us/v1alpha1      
+kind: IngressRoute    
+metadata:     
+  annotations:
+  name: "{{ .Release.Name }}-http"      
+spec: 
+  entryPoints:
+  - web       
+  routes:     
+  - kind: Rule
+    match: Host(`{{ .Values.ingress.host }}`)   
+    middlewares:      
+    - name: "{{ .Release.Name }}-https-only"     
+    services: 
+    - kind: Service   
+      name: {{ template "helm-guestbook.fullname" . }} 
+      port: http     
+---   
+apiVersion: traefik.containo.us/v1alpha1      
+kind: Middleware      
+metadata:     
+  name: "{{ .Release.Name }}-https-only"      
+spec: 
+  redirectScheme:     
+    permanent: true   
+    scheme: https     
+---   
+apiVersion: cert-manager.io/v1
+kind: Certificate     
+metadata:     
+  name: "{{ .Release.Name }}-https"  
 spec:
   commonName: {{ .Values.ingress.host }}
   dnsNames:
